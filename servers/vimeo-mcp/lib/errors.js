@@ -11,7 +11,7 @@ export const ERROR_CODES = {
 export function classifyVimeoError (err) {
   const status = err && (err.statusCode || err.status) || null
   const message = (err && err.message) || String(err || '')
-  if (status === 401 || status === 403 || /scope|insufficient/i.test(message)) {
+  if (status === 401 || status === 403) {
     return { code: ERROR_CODES.AUTH_SCOPE, status, message }
   }
   if (status === 429) {
@@ -25,6 +25,9 @@ export function classifyVimeoError (err) {
   }
   if (status && status >= 500 && status <= 599) {
     return { code: ERROR_CODES.TRANSIENT, status, message }
+  }
+  if (!status && /scope|insufficient/i.test(message)) {
+    return { code: ERROR_CODES.AUTH_SCOPE, status, message }
   }
   if (/tus|upload|stream|ECONNRESET|ETIMEDOUT/i.test(message)) {
     return { code: ERROR_CODES.UPLOAD_INTERRUPTED, status, message }

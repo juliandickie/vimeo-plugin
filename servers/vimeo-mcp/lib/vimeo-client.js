@@ -57,12 +57,19 @@ export class VimeoClient {
     const res = await this._request({
       path: `/videos/${videoId}/texttracks`,
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       query: { type, language, name: name || language }
     })
     return res.body
   }
 
   async uploadTextTrackFile (uploadLink, contents) {
+    if (typeof uploadLink !== 'string' || !uploadLink.startsWith('https://captions.cloud.vimeo.com/')) {
+      throw Object.assign(new Error('invalid or unexpected texttrack upload link'), { statusCode: 400 })
+    }
+    if (typeof contents !== 'string' || contents.length === 0) {
+      throw Object.assign(new Error('empty caption contents - refusing to upload an empty track'), { statusCode: 400 })
+    }
     const host = 'captions.cloud.vimeo.com'
     const res = await this._request({
       hostname: host,
@@ -87,14 +94,14 @@ export class VimeoClient {
     return res.body
   }
 
-  replaceSource (filePath, videoUri, onProgress = () => {}) {
+  replaceSource (filePath, videoUri) {
     return new Promise((resolve, reject) => {
       this._client.replace(
         filePath,
         videoUri,
         {},
         (uri) => resolve(uri),
-        (bytes, total) => onProgress(bytes, total),
+        () => {},
         (err) => reject(new Error(typeof err === 'string' ? err : (err.message || 'replace failed')))
       )
     })

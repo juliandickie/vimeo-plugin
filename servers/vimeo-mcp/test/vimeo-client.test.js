@@ -73,6 +73,60 @@ test('uploadTextTrackFile targets the caption host with the stripped path and be
   assert.equal(put.headers['Content-Type'], 'text/plain')
 })
 
+test('createTextTrack records correct method, path, Content-Type header, and query shape', async () => {
+  const rec = []
+  const c = new VimeoClient({ accessToken: 't' }, () => ({
+    request (options, cb) {
+      rec.push(options)
+      cb(null, { uri: '/t/10', link: 'https://captions.cloud.vimeo.com/abc' }, 201, {})
+    }
+  }))
+  await c.createTextTrack('123', { type: 'subtitles', language: 'es' })
+  const call = rec[0]
+  assert.equal(call.method, 'POST')
+  assert.equal(call.path, '/videos/123/texttracks')
+  assert.equal(call.headers['Content-Type'], 'application/json')
+  assert.deepEqual(call.query, { type: 'subtitles', language: 'es', name: 'es' })
+})
+
+test('uploadTextTrackFile records correct method, hostname, path, Authorization, Content-Type, and body', async () => {
+  const rec = []
+  const c = new VimeoClient({ accessToken: 'tok' }, () => ({
+    request (options, cb) {
+      rec.push(options)
+      cb(null, '', 200, {})
+    }
+  }))
+  await c.uploadTextTrackFile('https://captions.cloud.vimeo.com/up/x', 'WEBVTT...')
+  const call = rec[0]
+  assert.equal(call.method, 'PUT')
+  assert.equal(call.hostname, 'captions.cloud.vimeo.com')
+  assert.equal(call.path, 'up/x')
+  assert.equal(call.headers.Authorization, 'bearer tok')
+  assert.equal(call.headers['Content-Type'], 'text/plain')
+  assert.equal(call.body, 'WEBVTT...')
+})
+
+test('uploadTextTrackFile rejects with statusCode 400 for invalid host', async () => {
+  const c = new VimeoClient({ accessToken: 'tok' }, () => ({
+    request (options, cb) { cb(null, '', 200, {}) }
+  }))
+  await assert.rejects(
+    () => c.uploadTextTrackFile('https://evil.example.com/x', 'data'),
+    (e) => e.statusCode === 400
+  )
+})
+
+test('uploadTextTrackFile rejects with statusCode 400 for empty contents', async () => {
+  const c = new VimeoClient({ accessToken: 'tok' }, () => ({
+    request (options, cb) { cb(null, '', 200, {}) }
+  }))
+  await assert.rejects(
+    () => c.uploadTextTrackFile('https://captions.cloud.vimeo.com/up/x', ''),
+    (e) => e.statusCode === 400
+  )
+})
+
 test('listVersions returns the data array', async () => {
   const c = new VimeoClient({ accessToken: 't' }, () => ({
     request (o, cb) {

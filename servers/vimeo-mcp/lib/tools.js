@@ -72,6 +72,9 @@ export function makeTools (client, opts = {}) {
           await client.deleteTextTrack(plan.existingUri)
         }
         const created = await client.createTextTrack(videoId, { type, language, name })
+        if (!created || typeof created.link !== 'string') {
+          throw Object.assign(new Error('texttrack create response missing upload link'), { statusCode: 400 })
+        }
         const code = await client.uploadTextTrackFile(created.link, contents)
         return { action: plan.action, trackUri: created.uri, httpStatus: code }
       }),

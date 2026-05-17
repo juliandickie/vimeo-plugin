@@ -70,6 +70,17 @@ test('vimeo_get_upload_status reports ready', async () => {
   assert.equal(r.data.ready, true)
 })
 
+test('vimeo_upsert_texttrack returns invalid_input when createTextTrack response has no link', async () => {
+  const tools = makeTools(stubClient({
+    createTextTrack: async () => ({ uri: '/t/11' })
+  }), { retries: 0 })
+  const r = await tools.vimeo_upsert_texttrack({
+    videoId: '1', type: 'captions', language: 'fr', contents: 'WEBVTT'
+  })
+  assert.equal(r.ok, false)
+  assert.equal(r.error.code, 'invalid_input')
+})
+
 test('vimeo_list_versions returns ok with the versions array', async () => {
   const tools = makeTools(stubClient({
     listVersions: async () => [{ uri: '/videos/1/versions/5', filename: 'a.mp4', created_time: 't' }]

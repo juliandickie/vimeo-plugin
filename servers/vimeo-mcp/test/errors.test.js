@@ -29,3 +29,7 @@ test('tus stream error maps to upload_interrupted', () => {
 test('insufficient scope text maps to auth_scope even without status', () => {
   assert.equal(classifyVimeoError({ message: 'insufficient scope' }).code, ERROR_CODES.AUTH_SCOPE)
 })
+
+test('503 with scope in body must classify as transient not auth_scope', () => {
+  assert.equal(classifyVimeoError({ statusCode: 503, message: 'insufficient scope' }).code, ERROR_CODES.TRANSIENT)
+})
