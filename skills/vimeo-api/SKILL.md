@@ -15,14 +15,15 @@ upload_interrupted, invalid_input, unknown.
 auth_scope error means the token is missing a required scope (public private
 edit upload video_files). Send the user to /vimeo:setup.
 
-- vimeo_get_video - args videoId. Returns name, description, upload.status,
-transcode.status.
+- vimeo_get_video - args videoId. Returns uri, name, description,
+upload.status, transcode.status. The uri is the value to record as the prior
+version reference in the manifest before a source replace.
 
 - vimeo_list_texttracks - args videoId. Returns the array of tracks, each with
 uri, language, type, active.
 
 - vimeo_upsert_texttrack - args videoId, type (captions or subtitles),
-language (BCP 47), optional name, contents (the full caption file text). It
+language (BCP 47), optional name, contents (the raw text of the VTT or SRT file itself, not a file path and not base64). It
 lists tracks, deletes the existing same-language same-type track if present,
 creates a fresh track, and uploads the contents. Idempotent at the workflow
 level via the manifest hash, not inside the tool.
@@ -38,8 +39,10 @@ path already downloaded via Scribe). Creates a new version and performs a
 resumable upload. Destructive. Only call after the double-confirmation gate
 and after the prior version reference is written to the manifest.
 
-- vimeo_get_upload_status - args videoId. Returns ready and failed booleans.
-Poll after replace until ready true or failed true.
+- vimeo_get_upload_status - args videoId. Returns ready and failed booleans
+plus the raw uploadStatus and transcodeStatus strings. Poll after replace
+until ready true or failed true. On failed, report the uploadStatus and
+transcodeStatus strings as the reason.
 
 ## Caption type rule
 
@@ -47,4 +50,6 @@ Use type captions when the file represents spoken dialogue for the same
 language as the audio. Use type subtitles for translations into other
 languages. The manifest asset_type is always caption regardless; the Vimeo
 type is decided per row from the language relative to the video's spoken
-language. When unsure, default to subtitles for non-source languages.
+language. The video's spoken language comes from the manifest row, or from
+vimeo_get_video if the row does not state it. When unsure, default to subtitles
+for non-source languages.
