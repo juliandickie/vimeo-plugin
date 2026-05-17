@@ -4,6 +4,8 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema
 } from '@modelcontextprotocol/sdk/types.js'
+import { fileURLToPath } from 'node:url'
+import { realpathSync } from 'node:fs'
 import { VimeoClient } from './lib/vimeo-client.js'
 import { makeTools } from './lib/tools.js'
 
@@ -64,6 +66,15 @@ async function main () {
   await server.connect(new StdioServerTransport())
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+function isDirectRun () {
+  try {
+    if (!process.argv[1]) return false
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1])
+  } catch {
+    return false
+  }
+}
+
+if (isDirectRun()) {
   main()
 }
