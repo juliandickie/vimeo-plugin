@@ -21,7 +21,10 @@ Google access.
 
 - First run, token, or manifest setup - /vimeo:setup
 
-All four push workflows are user-invoked only. Never trigger them from context.
+The three content-push workflows (/vimeo:sync-captions, /vimeo:sync-metadata,
+/vimeo:replace-source) and /vimeo:setup are user-invoked only. Never trigger
+them from context. /vimeo:reconcile is read-only and may be run as part of
+planning a push.
 
 ## Cross-plugin composition
 
@@ -37,15 +40,25 @@ plugins never call each other.
 
 ## Safety rules - always apply
 
-1. Every push runs a reconcile and presents a per-row dry-run plan. Get
-explicit user approval before any write.
+1. Every push runs a reconcile and presents a per-row dry-run plan. The user
+must explicitly approve that specific plan in the same turn before any write
+begins. A general earlier yes is not approval - the user confirms the plan you
+just showed.
 
-2. Source replace is destructive. Require a second explicit confirmation that
-names the specific video, and record the prior version reference to the
-manifest before changing anything. Never delete.
+2. Any write that affects more than one video (bulk caption or metadata sync)
+is a batched change with external effect. Before writing, state how many
+videos and which languages will be affected and get explicit confirmation of
+that scope.
 
-3. Never report a clean success when any row failed. Always end with counts of
-synced, skipped, and failed with reasons.
+3. Source replace is destructive. In addition to rule 1, require a second
+explicit confirmation that names the specific video and its current title, and
+record the prior version reference (the Vimeo video id plus the current
+version uri from vimeo_get_video) into the manifest prior_version_ref column
+before changing anything. Never delete.
 
-4. The content hash gate makes every workflow safe to re-run. Skip rows whose
+4. Never report a clean success when any row failed. Always end the final
+response to the user, not only the manifest, with counts of synced, skipped,
+and failed with reasons.
+
+5. The content hash gate makes every workflow safe to re-run. Skip rows whose
 hash is unchanged.
