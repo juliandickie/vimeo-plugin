@@ -1,9 +1,7 @@
-# Cloned Vimeo reference repos - studied, not part of this plugin's source.
-# Each carries its own .git; excluded to keep history clean and avoid nested repos.
-docs/vimeo.js/
-docs/vimeo.php/
-docs/vimeo.py/
-docs/openapi/
+# Everything under docs/ stays local and untracked by request.
+# This includes the cloned Vimeo reference repos (vimeo.js/php/py/openapi),
+# the design specs, and any research notes.
+docs/
 
 # Node deps for the bundled MCP server are installed into the plugin data dir,
 # never committed.
