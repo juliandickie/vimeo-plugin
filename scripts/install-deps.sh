@@ -15,11 +15,16 @@ mkdir -p "$DEST/lib"
 cp "$SRC/index.js" "$DEST/index.js"
 cp "$SRC"/lib/*.js "$DEST/lib/"
 
-# Install deps in DEST only when package.json changed or modules are missing.
-if ! diff -q "$SRC/package.json" "$DEST/package.json" >/dev/null 2>&1 || [ ! -d "$DEST/node_modules" ]; then
+# Install deps in DEST only when package.json or package-lock.json changed
+# vs the DEST copies, or when node_modules is missing.
+# npm ci requires the lockfile to be present and in sync with package.json.
+if ! diff -q "$SRC/package.json" "$DEST/package.json" >/dev/null 2>&1 \
+   || ! diff -q "$SRC/package-lock.json" "$DEST/package-lock.json" >/dev/null 2>&1 \
+   || [ ! -d "$DEST/node_modules" ]; then
   cp "$SRC/package.json" "$DEST/package.json"
-  ( cd "$DEST" && npm install --omit=dev --silent ) || {
-    rm -f "$DEST/package.json"
+  cp "$SRC/package-lock.json" "$DEST/package-lock.json"
+  ( cd "$DEST" && npm ci --omit=dev --ignore-scripts --silent ) || {
+    rm -f "$DEST/package.json" "$DEST/package-lock.json"
     echo "vimeo-mcp dependency install failed; the Vimeo MCP server will be unavailable this session - re-open the session to retry" >&2
     exit 0
   }

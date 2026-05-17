@@ -2,9 +2,10 @@
   "mcpServers": {
     "vimeo": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_DATA}/vimeo-mcp/index.js"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/run-mcp.mjs"],
       "env": {
-        "VIMEO_ACCESS_TOKEN": "${user_config.vimeo_access_token}"
+        "VIMEO_ACCESS_TOKEN": "${user_config.vimeo_access_token}",
+        "VIMEO_MCP_DATA": "${CLAUDE_PLUGIN_DATA}"
       }
     }
   }
