@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "vimeo",
+  "version": "0.1.0",
+  "description": "Push Descript exports from Google Drive into the existing Vimeo library. Activates for: (1) syncing multi-language captions to Vimeo videos, (2) updating Vimeo title and description, (3) replacing a Vimeo source file, (4) reconciling a Drive-to-Vimeo manifest.",
+  "author": { "name": "Julian Dickie" },
+  "license": "MIT",
+  "keywords": ["vimeo", "captions", "subtitles", "descript", "google-drive"],
+  "mcpServers": "./.mcp.json",
+  "userConfig": {
+    "vimeo_access_token": {
+      "type": "string",
+      "title": "Vimeo Access Token",
+      "description": "Personal access token from your Vimeo developer app with scopes public private edit upload video_files",
+      "sensitive": true,
+      "required": true
+    },
+    "manifest_sheet_id": {
+      "type": "string",
+      "title": "Manifest Google Sheet ID",
+      "description": "Optional. If set, this Sheet is used as the manifest. If empty, /vimeo:setup creates one."
+    },
+    "vimeo_test_video_id": {
+      "type": "string",
+      "title": "Disposable Vimeo Test Video ID",
+      "description": "Optional. Used only by the documented manual end-to-end test."
+    }
+  }
+}
