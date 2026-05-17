@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "vimeo-plugin",
+  "description": "Standalone single-plugin marketplace for the Vimeo plugin. Pushes Descript exports from Google Drive into the iDD Vimeo library - multi-language captions, metadata sync, and gated source replacement.",
+  "owner": {
+    "name": "Julian Dickie"
+  },
+  "plugins": [
+    {
+      "name": "vimeo",
+      "description": "Push Descript exports from Google Drive into the existing Vimeo library. Activates for: (1) syncing multi-language captions to Vimeo videos, (2) updating Vimeo title and description, (3) replacing a Vimeo source file, (4) reconciling a Drive-to-Vimeo manifest.",
+      "version": "0.1.0",
+      "author": { "name": "Julian Dickie" },
+      "license": "MIT",
+      "keywords": ["vimeo", "captions", "subtitles", "descript", "google-drive"],
+      "category": "productivity",
+      "source": "./"
+    }
+  ]
+}

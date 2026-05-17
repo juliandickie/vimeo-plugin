@@ -17,7 +17,7 @@ edit upload video_files). Send the user to /vimeo:setup.
 
 - vimeo_get_video - args videoId. Returns uri, name, description, upload.status, transcode.status. Note the uri here is the video's own uri, not a version pointer - it is not a recovery anchor for source replace.
 
-- vimeo_list_versions - args videoId. Read-only. Returns the array of source versions, each with its own uri (a real restorable pointer like /videos/123/versions/9, distinct from the video uri), filename, created_time, filesize. Call this before a source replace and record the current (most recent) version's uri, filename, and created_time as the prior_version_ref recovery anchor.
+- vimeo_list_versions - args videoId. Read-only. Returns the full array of source versions, each with its own uri (a real restorable pointer like /videos/123/versions/9, distinct from the video uri), filename, created_time, filesize. The API does NOT guarantee sort order - callers must NOT assume the first element is the most recent. Before a source replace, sort all returned entries by created_time descending, build a compact snapshot of every entry as "uri|filename|created_time" (all of them, sorted newest first), and record that complete snapshot as the prior_version_ref recovery anchor. The primary pointer (genuine prior source) is the entry with the maximum created_time, never data[0] or any other array-index assumption.
 
 - vimeo_list_texttracks - args videoId. Returns the array of tracks, each with
 uri, language, type, active.

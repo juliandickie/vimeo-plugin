@@ -50,7 +50,7 @@ is a batched change with external effect. Before writing, state how many
 videos and which languages will be affected and get explicit confirmation of
 that scope.
 
-3. Source replace is destructive. In addition to rule 1, require a second explicit confirmation that names the specific video and its current title, and record the prior version reference into the manifest prior_version_ref column before changing anything. The reference comes from vimeo_list_versions - the current version uri (a real restorable pointer like /videos/123/versions/9), its filename, and its created_time. Never delete.
+3. Source replace is destructive. In addition to rule 1, require a second explicit confirmation that names the specific video and its current title, and record the prior version reference into the manifest prior_version_ref column before changing anything. The reference is a full snapshot from vimeo_list_versions - every returned version as a "uri|filename|created_time" entry, all of them sorted newest first by created_time, with the maximum created_time entry as the primary pointer. Do not record only a single uri or rely on array order - the API does not guarantee sort order and the recovery anchor must be complete regardless of how the API orders its response. Never delete.
 
 4. Never report a clean success when any row failed. Always end the final
 response to the user, not only the manifest, with counts of synced, skipped,

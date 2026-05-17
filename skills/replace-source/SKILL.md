@@ -48,13 +48,19 @@ change.
    reason "no recovery anchor available" and continue. Never destructively
    replace a video without a recorded prior version anchor.
 
-   - Write the current (most recent) version's uri, filename, and
-   created_time into the manifest prior_version_ref column via the Scribe
-   plugin's Sheets tools. Then confirm that write succeeded. If the Sheets
-   write returns any error, set the row status failed with reason
-   "anchor write failed - cannot replace without a confirmed recovery record"
-   and do not proceed to step 6 or step 7 for that row. The replace must
-   never fire unless the anchor is durably written.
+   - From the returned versions list, sort all entries by created_time
+   descending (do not rely on array order - the API does not guarantee sort
+   order). Build a compact JSON snapshot of every returned version as an
+   array of "uri|filename|created_time" entries, all of them, sorted newest
+   first by created_time. The entry with the maximum created_time is the
+   primary pointer (the genuine prior source). Write this full snapshot into
+   the manifest prior_version_ref column via the Scribe plugin's Sheets
+   tools. Then confirm that write succeeded. If the Sheets write returns any
+   error, set the row status failed with reason "anchor write failed -
+   cannot replace without a confirmed recovery record" and do not proceed to
+   step 6 or step 7 for that row. The replace must never fire unless the
+   anchor is durably written. Never pick the prior source by array index
+   (data[0] or similar) - always by max created_time.
 
 6. Immediately before the destructive call for a given video, ask for a
 second explicit confirmation that names that specific vimeo_video_id and its

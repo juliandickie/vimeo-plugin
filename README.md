@@ -7,10 +7,17 @@ Scribe plugin.
 
 ## Requirements
 
-- The Scribe plugin installed and authenticated for Google Drive and Sheets.
+- The Scribe plugin is a hard prerequisite. Drive downloads and Sheets
+read/write are delegated entirely to it. Without the Scribe plugin installed
+and authenticated for Google Drive and Sheets, none of the workflows can run.
 
 - A Vimeo personal access token with scopes public private edit upload
 video_files, set in the plugin config field Vimeo Access Token.
+
+- Node.js 18 or later. The MCP server dependencies (including
+@modelcontextprotocol/sdk and the vimeo library) are installed automatically
+into the plugin data directory by the SessionStart hook on first use. No
+manual npm install is required.
 
 ## Setup
 

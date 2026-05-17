@@ -17,8 +17,11 @@ live there.
 ## Build and Test
 
 Server is ESM Node. From servers/vimeo-mcp run npm test (node --test).
-Deterministic logic is unit tested - errors, hash, status, texttracks. The
-adapter and tools are tested with an injected fake client.
+Four deterministic helper modules are unit tested (errors, hash, status,
+texttracks). The vimeo-client adapter and the tools layer are tested with an
+injected fake/recording client. An index wiring test confirms the server
+registers all expected tools. No manual npm install is needed - the
+SessionStart hook installs dependencies into the plugin data dir automatically.
 
 ## Versioning
 
