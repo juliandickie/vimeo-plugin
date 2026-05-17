@@ -15,9 +15,9 @@ upload_interrupted, invalid_input, unknown.
 auth_scope error means the token is missing a required scope (public private
 edit upload video_files). Send the user to /vimeo:setup.
 
-- vimeo_get_video - args videoId. Returns uri, name, description,
-upload.status, transcode.status. The uri is the value to record as the prior
-version reference in the manifest before a source replace.
+- vimeo_get_video - args videoId. Returns uri, name, description, upload.status, transcode.status. Note the uri here is the video's own uri, not a version pointer - it is not a recovery anchor for source replace.
+
+- vimeo_list_versions - args videoId. Read-only. Returns the array of source versions, each with its own uri (a real restorable pointer like /videos/123/versions/9, distinct from the video uri), filename, created_time, filesize. Call this before a source replace and record the current (most recent) version's uri, filename, and created_time as the prior_version_ref recovery anchor.
 
 - vimeo_list_texttracks - args videoId. Returns the array of tracks, each with
 uri, language, type, active.
