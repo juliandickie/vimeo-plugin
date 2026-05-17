@@ -61,3 +61,14 @@ test('request error rejects with statusCode attached', async () => {
   }))
   await assert.rejects(() => c.whoami(), (e) => e.statusCode === 500)
 })
+
+test('uploadTextTrackFile targets the caption host with the stripped path and bearer header', async () => {
+  const rec = []
+  const c = new VimeoClient({ accessToken: 'tok' }, fakeFactory(rec))
+  await c.uploadTextTrackFile('https://captions.cloud.vimeo.com/up/xyz', 'WEBVTT')
+  const put = rec.find(o => o.method === 'PUT')
+  assert.equal(put.hostname, 'captions.cloud.vimeo.com')
+  assert.equal(put.path, 'up/xyz')
+  assert.equal(put.headers.Authorization, 'bearer tok')
+  assert.equal(put.headers['Content-Type'], 'text/plain')
+})
