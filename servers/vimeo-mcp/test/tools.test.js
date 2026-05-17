@@ -89,3 +89,42 @@ test('vimeo_list_versions returns ok with the versions array', async () => {
   assert.equal(r.ok, true)
   assert.equal(r.data[0].uri, '/videos/1/versions/5')
 })
+
+test('vimeo_upsert_texttrack fails with transient when uploadTextTrackFile resolves 503', async () => {
+  const tools = makeTools(stubClient({
+    listTextTracks: async () => [],
+    createTextTrack: async () => ({ uri: '/t/11', link: 'https://captions.cloud.vimeo.com/y' }),
+    uploadTextTrackFile: async () => 503
+  }), { retries: 0, backoffMs: 0 })
+  const r = await tools.vimeo_upsert_texttrack({
+    videoId: '1', type: 'captions', language: 'fr', contents: 'WEBVTT'
+  })
+  assert.equal(r.ok, false)
+  assert.equal(r.error.code, 'transient')
+})
+
+test('vimeo_upsert_texttrack fails with invalid_input when uploadTextTrackFile resolves 422', async () => {
+  const tools = makeTools(stubClient({
+    listTextTracks: async () => [],
+    createTextTrack: async () => ({ uri: '/t/11', link: 'https://captions.cloud.vimeo.com/y' }),
+    uploadTextTrackFile: async () => 422
+  }), { retries: 0, backoffMs: 0 })
+  const r = await tools.vimeo_upsert_texttrack({
+    videoId: '1', type: 'captions', language: 'fr', contents: 'WEBVTT'
+  })
+  assert.equal(r.ok, false)
+  assert.equal(r.error.code, 'invalid_input')
+})
+
+test('vimeo_upsert_texttrack succeeds and reports httpStatus 200 when uploadTextTrackFile resolves 200', async () => {
+  const tools = makeTools(stubClient({
+    listTextTracks: async () => [],
+    createTextTrack: async () => ({ uri: '/t/11', link: 'https://captions.cloud.vimeo.com/y' }),
+    uploadTextTrackFile: async () => 200
+  }), { retries: 0, backoffMs: 0 })
+  const r = await tools.vimeo_upsert_texttrack({
+    videoId: '1', type: 'captions', language: 'fr', contents: 'WEBVTT'
+  })
+  assert.equal(r.ok, true)
+  assert.equal(r.data.httpStatus, 200)
+})

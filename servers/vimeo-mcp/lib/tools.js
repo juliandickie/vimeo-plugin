@@ -76,6 +76,12 @@ export function makeTools (client, opts = {}) {
           throw Object.assign(new Error('texttrack create response missing upload link'), { statusCode: 400 })
         }
         const code = await client.uploadTextTrackFile(created.link, contents)
+        if (typeof code !== 'number' || code < 200 || code >= 300) {
+          throw Object.assign(
+            new Error(`texttrack upload returned HTTP ${code}`),
+            { statusCode: code }
+          )
+        }
         return { action: plan.action, trackUri: created.uri, httpStatus: code }
       }),
 
