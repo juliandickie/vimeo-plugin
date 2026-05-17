@@ -1,0 +1,63 @@
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { VimeoClient } from '../lib/vimeo-client.js'
+
+function fakeFactory (recorder) {
+  return () => ({
+    request (options, cb) {
+      recorder.push(options)
+      if (options.path === '/me?fields=uri,name') {
+        return cb(null, { uri: '/users/1', name: 'iDD' }, 200, {})
+      }
+      if (options.method === 'GET' && options.path.includes('/texttracks')) {
+        return cb(null, { data: [{ uri: '/t/9', language: 'es', type: 'captions' }] }, 200, {})
+      }
+      if (options.method === 'POST' && options.path.includes('/texttracks')) {
+        return cb(null, { uri: '/t/10', link: 'https://captions.cloud.vimeo.com/abc' }, 201, {})
+      }
+      if (options.method === 'PUT') {
+        return cb(null, '', 200, {})
+      }
+      if (options.method === 'PATCH') {
+        return cb(null, { uri: options.path, name: options.query.name }, 200, {})
+      }
+      return cb(null, {}, 200, {})
+    },
+    replace (file, videoUri, params, complete) {
+      recorder.push({ replace: { file, videoUri } })
+      complete(videoUri)
+    }
+  })
+}
+
+test('whoami returns account body', async () => {
+  const rec = []
+  const c = new VimeoClient({ accessToken: 't' }, fakeFactory(rec))
+  const me = await c.whoami()
+  assert.equal(me.name, 'iDD')
+})
+
+test('listTextTracks returns the data array', async () => {
+  const c = new VimeoClient({ accessToken: 't' }, fakeFactory([]))
+  const tracks = await c.listTextTracks('123')
+  assert.equal(tracks[0].language, 'es')
+})
+
+test('createTextTrack returns uri and link', async () => {
+  const c = new VimeoClient({ accessToken: 't' }, fakeFactory([]))
+  const r = await c.createTextTrack('123', { type: 'captions', language: 'fr' })
+  assert.equal(r.link, 'https://captions.cloud.vimeo.com/abc')
+})
+
+test('replaceSource resolves with the video uri', async () => {
+  const c = new VimeoClient({ accessToken: 't' }, fakeFactory([]))
+  const uri = await c.replaceSource('/tmp/v.mp4', '/videos/123')
+  assert.equal(uri, '/videos/123')
+})
+
+test('request error rejects with statusCode attached', async () => {
+  const c = new VimeoClient({ accessToken: 't' }, () => ({
+    request (o, cb) { cb('boom', null, 500, {}) }
+  }))
+  await assert.rejects(() => c.whoami(), (e) => e.statusCode === 500)
+})
