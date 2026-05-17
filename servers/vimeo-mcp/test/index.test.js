@@ -16,3 +16,25 @@ test('index exports a buildServer that registers all phase 1 tools', async () =>
     assert.ok(toolNames.includes(t), `missing tool ${t}`)
   }
 })
+
+test('callTool dispatches a known tool and serialises the result', async () => {
+  const { callTool } = await import('../index.js')
+  const tools = { vimeo_whoami: async () => ({ ok: true, data: { name: 'iDD' } }) }
+  const r = await callTool(tools, 'vimeo_whoami', {})
+  assert.equal(r.isError, false)
+  assert.deepEqual(JSON.parse(r.content[0].text), { ok: true, data: { name: 'iDD' } })
+})
+
+test('callTool returns isError for an unknown tool', async () => {
+  const { callTool } = await import('../index.js')
+  const r = await callTool({}, 'nope', {})
+  assert.equal(r.isError, true)
+})
+
+test('callTool rejects an inherited property name without throwing', async () => {
+  const { callTool } = await import('../index.js')
+  const r = await callTool({}, '__proto__', {})
+  assert.equal(r.isError, true)
+  const r2 = await callTool({}, 'constructor', {})
+  assert.equal(r2.isError, true)
+})

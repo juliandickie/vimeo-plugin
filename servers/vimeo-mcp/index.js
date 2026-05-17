@@ -30,19 +30,27 @@ export function buildServer (config, clientFactory) {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOL_SCHEMAS }))
 
-  server.setRequestHandler(CallToolRequestSchema, async (req) => {
-    const handler = tools[req.params.name]
-    if (!handler) {
-      return { content: [{ type: 'text', text: `Unknown tool ${req.params.name}` }], isError: true }
-    }
-    const result = await handler(req.params.arguments || {})
-    return {
-      content: [{ type: 'text', text: JSON.stringify(result) }],
-      isError: result.ok === false
-    }
-  })
+  server.setRequestHandler(CallToolRequestSchema, async (req) =>
+    callTool(tools, req.params.name, req.params.arguments || {})
+  )
 
   return { server, toolNames: TOOL_SCHEMAS.map((t) => t.name) }
+}
+
+// Pure dispatch. Exported for direct unit testing. The own-property +
+// typeof-function guard prevents an inherited name like __proto__ or
+// constructor (which arrives from untrusted MCP request params) from
+// resolving to a non-tool and failing at call time.
+export async function callTool (tools, name, args) {
+  const handler = Object.prototype.hasOwnProperty.call(tools, name) ? tools[name] : undefined
+  if (typeof handler !== 'function') {
+    return { content: [{ type: 'text', text: `Unknown tool ${name}` }], isError: true }
+  }
+  const result = await handler(args || {})
+  return {
+    content: [{ type: 'text', text: JSON.stringify(result) }],
+    isError: result.ok === false
+  }
 }
 
 async function main () {
