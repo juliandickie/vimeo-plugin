@@ -1,0 +1,15 @@
+{
+  "name": "vimeo-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bundled MCP server wrapping the official vimeo library",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "vimeo": "^2.3.1"
+  }
+}
