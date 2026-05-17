@@ -62,6 +62,10 @@ export function makeTools (client, opts = {}) {
       run(async () => {
         const existing = await client.listTextTracks(videoId)
         const plan = planTextTrackUpsert(existing, { type, language })
+        // Delete-before-create: if create fails after this delete, the track is
+        // absent until the caller retries. Intentional - the workflow skill is
+        // idempotent and re-runs failed rows (a re-run sees no existing track
+        // and just creates), so no in-tool rollback is needed.
         if (plan.action === 'replace') {
           await client.deleteTextTrack(plan.existingUri)
         }
