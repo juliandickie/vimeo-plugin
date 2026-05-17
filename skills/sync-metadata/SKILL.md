@@ -15,15 +15,20 @@ changed, applying any --filter.
 2. Preflight the token. Call vimeo_whoami. If it returns an auth_scope error,
 stop and tell the user to run /vimeo:setup. Do not attempt any rows.
 
-3. The intended title and description come from the manifest row. The notes
-column carries the desired values in the form name=... and description=...
-unless the row references a Drive doc, in which case use the Scribe plugin's
-Drive tools to read that document for the text.
+3. The intended title and description always come from the row's
+drive_file_id, never from the notes column (notes is output only). Use the
+Scribe plugin's Drive tools to read that Drive doc. The first non-empty line
+of the doc is the intended title. The text after the first blank line is the
+intended description. If there is no text after the first blank line, update
+the title only. If the Drive doc cannot be read or yields no title, set that
+row status failed with the reason and skip it - do not write empty metadata to
+Vimeo.
 
 4. Build the per-row plan - show current Vimeo name and description versus
-intended. Compute a sha256 over the concatenation of intended name and
-description for the idempotency hash. Mark skip-unchanged when it equals the
-row content_hash.
+intended. Compute a sha256 over the resolved title text concatenated with the
+resolved description text (the actual content read from the Drive doc, not the
+doc id) for the idempotency hash. Mark skip-unchanged when it equals the row
+content_hash.
 
 5. Present the plan. State how many videos will be changed. The user must
 explicitly approve that specific plan in the same turn before any write
