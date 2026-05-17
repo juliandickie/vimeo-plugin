@@ -7,6 +7,7 @@
   "license": "MIT",
   "keywords": ["vimeo", "captions", "subtitles", "descript", "google-drive"],
   "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
   "userConfig": {
     "vimeo_access_token": {
       "type": "string",
