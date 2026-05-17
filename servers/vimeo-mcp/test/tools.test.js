@@ -69,3 +69,12 @@ test('vimeo_get_upload_status reports ready', async () => {
   assert.equal(r.ok, true)
   assert.equal(r.data.ready, true)
 })
+
+test('vimeo_list_versions returns ok with the versions array', async () => {
+  const tools = makeTools(stubClient({
+    listVersions: async () => [{ uri: '/videos/1/versions/5', filename: 'a.mp4', created_time: 't' }]
+  }))
+  const r = await tools.vimeo_list_versions({ videoId: '1' })
+  assert.equal(r.ok, true)
+  assert.equal(r.data[0].uri, '/videos/1/versions/5')
+})

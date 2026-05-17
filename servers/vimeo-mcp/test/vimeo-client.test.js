@@ -72,3 +72,17 @@ test('uploadTextTrackFile targets the caption host with the stripped path and be
   assert.equal(put.headers.Authorization, 'bearer tok')
   assert.equal(put.headers['Content-Type'], 'text/plain')
 })
+
+test('listVersions returns the data array', async () => {
+  const c = new VimeoClient({ accessToken: 't' }, () => ({
+    request (o, cb) {
+      if (o.method === 'GET' && o.path === '/videos/123/versions?fields=uri,filename,created_time,filesize') {
+        return cb(null, { data: [{ uri: '/videos/123/versions/9', filename: 'rev2.mp4', created_time: '2026-01-01T00:00:00+00:00', filesize: 4025322521 }] }, 200, {})
+      }
+      return cb(null, {}, 200, {})
+    }
+  }))
+  const v = await c.listVersions('123')
+  assert.equal(v[0].uri, '/videos/123/versions/9')
+  assert.equal(v[0].filename, 'rev2.mp4')
+})

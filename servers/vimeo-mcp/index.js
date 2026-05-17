@@ -10,6 +10,7 @@ import { makeTools } from './lib/tools.js'
 const TOOL_SCHEMAS = [
   { name: 'vimeo_whoami', description: 'Return the authenticated Vimeo account. Use as a precondition check.', inputSchema: { type: 'object', properties: {} } },
   { name: 'vimeo_get_video', description: 'Get a video name, description, upload and transcode status.', inputSchema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] } },
+  { name: 'vimeo_list_versions', description: 'List the source versions of a video. Read-only. Each version has its own uri (distinct from the video uri), filename, created_time, filesize. Use before a source replace to record the recovery anchor.', inputSchema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] } },
   { name: 'vimeo_list_texttracks', description: 'List text tracks for a video.', inputSchema: { type: 'object', properties: { videoId: { type: 'string' } }, required: ['videoId'] } },
   { name: 'vimeo_update_video_metadata', description: 'Update title and description on a video.', inputSchema: { type: 'object', properties: { videoId: { type: 'string' }, name: { type: 'string' }, description: { type: 'string' } }, required: ['videoId'] } },
   { name: 'vimeo_delete_texttrack', description: 'Delete a text track by its uri.', inputSchema: { type: 'object', properties: { trackUri: { type: 'string' } }, required: ['trackUri'] } },

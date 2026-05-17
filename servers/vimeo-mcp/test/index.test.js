@@ -11,7 +11,8 @@ test('index exports a buildServer that registers all phase 1 tools', async () =>
   for (const t of [
     'vimeo_whoami', 'vimeo_get_video', 'vimeo_list_texttracks',
     'vimeo_update_video_metadata', 'vimeo_delete_texttrack',
-    'vimeo_upsert_texttrack', 'vimeo_replace_source', 'vimeo_get_upload_status'
+    'vimeo_upsert_texttrack', 'vimeo_replace_source', 'vimeo_get_upload_status',
+    'vimeo_list_versions'
   ]) {
     assert.ok(toolNames.includes(t), `missing tool ${t}`)
   }

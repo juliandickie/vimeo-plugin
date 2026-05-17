@@ -50,6 +50,8 @@ export function makeTools (client, opts = {}) {
 
     vimeo_get_video: ({ videoId }) => run(() => client.getVideo(videoId)),
 
+    vimeo_list_versions: ({ videoId }) => run(() => client.listVersions(videoId)),
+
     vimeo_list_texttracks: ({ videoId }) => run(() => client.listTextTracks(videoId)),
 
     vimeo_update_video_metadata: ({ videoId, name, description }) =>

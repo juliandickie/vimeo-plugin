@@ -40,6 +40,14 @@ export class VimeoClient {
     return res.body
   }
 
+  async listVersions (videoId) {
+    const res = await this._request({
+      path: `/videos/${videoId}/versions?fields=uri,filename,created_time,filesize`,
+      method: 'GET'
+    })
+    return (res.body && res.body.data) || []
+  }
+
   async listTextTracks (videoId) {
     const res = await this._request({ path: `/videos/${videoId}/texttracks`, method: 'GET' })
     return (res.body && res.body.data) || []
