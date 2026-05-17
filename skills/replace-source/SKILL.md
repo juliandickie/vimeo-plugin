@@ -31,34 +31,51 @@ replaced and how many that is. The user must explicitly approve that specific
 batch plan in the same turn before any change begins. A general earlier yes is
 not approval.
 
-5. For each approved non-skipped row, before any change, call
-vimeo_list_versions for that video. Record into the manifest prior_version_ref
-column, via the Scribe plugin's Sheets tools, the current (most recent)
-version's uri, filename, and created_time. This is the archive-over-delete
-recovery anchor and must be written before the replace call. If
-vimeo_list_versions errors or returns no versions, do not replace that row -
-set it status failed with reason "no recovery anchor available" and continue.
-Never destructively replace a video without a recorded prior version anchor.
+5. For each approved non-skipped row, establish the recovery anchor before any
+change.
+
+   - If the row's prior_version_ref is already non-empty (a previous run
+   recorded it, for example a retry after a partial failure), do not overwrite
+   it. The existing value is the pointer to the genuine original source.
+   Surface it to the user and ask them to confirm explicitly that this run
+   should proceed keeping that original anchor. If they do not confirm, set
+   the row status failed with reason "existing prior_version_ref needs manual
+   review" and continue. Never silently overwrite a non-empty
+   prior_version_ref - that would destroy the only pointer to the original.
+
+   - Otherwise call vimeo_list_versions for that video. If it errors or
+   returns no versions, do not replace that row - set status failed with
+   reason "no recovery anchor available" and continue. Never destructively
+   replace a video without a recorded prior version anchor.
+
+   - Write the current (most recent) version's uri, filename, and
+   created_time into the manifest prior_version_ref column via the Scribe
+   plugin's Sheets tools. Then confirm that write succeeded. If the Sheets
+   write returns any error, set the row status failed with reason
+   "anchor write failed - cannot replace without a confirmed recovery record"
+   and do not proceed to step 6 or step 7 for that row. The replace must
+   never fire unless the anchor is durably written.
 
 6. Immediately before the destructive call for a given video, ask for a
 second explicit confirmation that names that specific vimeo_video_id and its
 current title. If the user does not give an unambiguous yes for that named
 video, do not replace it - set that row status skipped, append a note that it
 was declined at the confirmation gate and that prior_version_ref was recorded
-but no replace occurred, and continue to the next row. Never let a recorded
+but no replace occurred, write that updated row to the manifest via the Scribe
+plugin's Sheets tools, and continue to the next row. Never let a recorded
 prior_version_ref imply a replace happened when it did not.
 
 7. Call vimeo_replace_source with videoUri and the local filePath. Then poll
-vimeo_get_upload_status. Stop polling when ready is true or failed is true, or
-when a bounded ceiling is reached (do not poll forever - cap at roughly 60
-polls or 30 minutes of elapsed wait, whichever first, since large transcodes
-are slow). If the ceiling is reached without ready or failed, treat the row as
-failed with reason "transcode timeout - check Vimeo directly".
+vimeo_get_upload_status every 30 seconds, up to 60 polls (about 30 minutes
+total). Stop as soon as ready is true or failed is true. If 60 polls elapse
+without ready or failed, treat the row as failed with reason "transcode
+timeout - check Vimeo directly".
 
 8. Write the manifest row back via the Scribe plugin's Sheets tools.
 
    - skip-unchanged rows - set status skipped. Leave content_hash,
-   last_synced_at, and prior_version_ref unchanged. No replace was performed.
+   last_synced_at, and prior_version_ref exactly as they already are. Do not
+   write the freshly computed hash back. No replace was performed.
 
    - declined at the step 6 gate - handled in step 6 (status skipped, note
    added, prior_version_ref left as recorded with the not-replaced note).
@@ -76,5 +93,7 @@ failed with reason "transcode timeout - check Vimeo directly".
    Continue to the next row. Never abort the whole run on a single failure.
 
 9. End by reporting to the user, in the final response, the per-row outcomes
-and the counts of synced, skipped, and failed with reasons. Never describe a
-run with any failure as clean.
+and the counts of synced, failed (with reasons), and skipped. Break the
+skipped count into skip-unchanged versus declined-at-the-confirmation-gate so
+the user can see which videos they declined. Never describe a run with any
+failure as clean.
